@@ -1,16 +1,13 @@
 import { Log } from 'decentraland-commons'
 
-import { bundleAssetPack, saveAssetPack, uploadAssetPack } from '../lib/pack'
+import { AssetPack } from '../lib/AssetPack'
 
 const log = new Log('cmd::bundle')
 
-export const register = (program) => {
+export const register = program => {
   program
-  .command('bundle')
-    .option(
-      '--title [assetPackTitle]',
-      'The title for the asset pack'
-    )
+    .command('bundle')
+    .option('--title [assetPackTitle]', 'The title for the asset pack')
     .option('--src [assetPackDir]', 'Path to the asset pack content folder')
     .option(
       '--bucket [bucketName]',
@@ -21,22 +18,22 @@ export const register = (program) => {
     .action(main)
 }
 
-const main = async (options) => {
+const main = async options => {
   try {
-    const assetPack = await bundleAssetPack(
-        options.src,
-        options.title,
-        options.contentServer
-      )
+    const assetPack = new AssetPack(options.title, options.src)
+
+    await assetPack.bundle(options.contentServer)
+
     if (options.out) {
-      saveAssetPack(assetPack, options.out)
+      assetPack.save(options.out)
     }
 
     if (options.bucket) {
-      await uploadAssetPack(assetPack, options.src, options.bucket)
+      await assetPack.upload(options.bucket)
     }
   } catch (err) {
     log.error(err)
   }
+
   process.exit()
 }
