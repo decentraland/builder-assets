@@ -1,33 +1,35 @@
 import * as AWS from 'aws-sdk'
-import { env } from 'decentraland-commons'
+import { env, utils } from 'decentraland-commons'
 
 export const s3 = new AWS.S3({
   accessKeyId: env.get('AWS_ACCESS_KEY'),
   secretAccessKey: env.get('AWS_ACCESS_SECRET')
 })
 
-export const s3CheckFile = (bucketName: string, key: string): Promise<boolean> => {
+export async function checkFile(
+  bucketName: string,
+  key: string
+): Promise<boolean> {
   const params = {
     Bucket: bucketName,
     Key: key
   }
-  return new Promise((resolve, reject) => {
-    s3.headObject(params, function (err, data) {
-      (err) ? resolve(false) : resolve(true)
-    })
-  })
+  const headObject = utils.promisify<boolean>(s3.headObject.bind(s3))
+  const result = await headObject(params)
+  return !!result
 }
 
-export const s3UploadFile = (bucketName: string, key: string, data: Buffer) => {
+export function uploadFile(
+  bucketName: string,
+  key: string,
+  data: Buffer
+): Promise<AWS.S3.ManagedUpload> {
   const params = {
     Bucket: bucketName,
     Key: key,
     Body: data,
     ACL: 'public-read'
   }
-  return new Promise((resolve, reject) => {
-    s3.upload(params, function(err, data) {
-      (err) ? reject(err) : resolve(data)
-    })
-  })
+  const upload = utils.promisify<AWS.S3.ManagedUpload>(s3.upload.bind(s3))
+  return upload(params)
 }

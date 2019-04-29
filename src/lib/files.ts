@@ -3,21 +3,24 @@ import * as path from 'path'
 
 import { takeLast } from './utils'
 
-export const isDirectory = (source: string) => fs.lstatSync(source).isDirectory()
+// TODO: npm install defenetly typed for fs/path
+export const isDirectory = (source: string): boolean =>
+  fs.lstatSync(source).isDirectory()
 
-export const getDirectories = (source: string) =>
+export const getDirectories = (source: string): string[] =>
   fs
     .readdirSync(source)
     .map(name => path.join(source, name))
     .filter(isDirectory)
 
-export const getFiles = (source: string) =>
+export const getFiles = (source: string): string[] =>
   fs
     .readdirSync(source)
     .map(name => path.join(source, name))
-    .filter(obj => !isDirectory(obj))
+    .filter(fullpath => !isDirectory(fullpath))
 
-export const getBaseDir = (source: string) => takeLast(path.dirname(source).split('/'))
+export const getBaseDir = (source: string): string =>
+  takeLast(path.dirname(source).split('/'))
 
-export const getRelativeDir = (source: string) =>
+export const getRelativeDir = (source: string): string =>
   path.join(getBaseDir(source), path.basename(source))
