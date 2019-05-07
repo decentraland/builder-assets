@@ -1,3 +1,4 @@
+import * as fs from 'fs-extra'
 import * as path from 'path'
 import { Log } from 'decentraland-commons'
 
@@ -57,7 +58,13 @@ export class AssetPack {
 
   async save(outPath: string) {
     const filePath = path.join(outPath, `${this.id}.json`)
-    return writeFileAsServerRequest(filePath, this.toJSON())
+    const thumbnailPath = path.join(outPath, `${this.id}.png`)
+
+    return Promise.all([
+      writeFileAsServerRequest(filePath, this.toJSON()),
+
+      fs.copy(path.join(this.directory, 'thumbnail.png'), thumbnailPath)
+    ])
   }
 
   toJSON() {

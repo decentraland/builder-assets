@@ -12,7 +12,11 @@ Some set-up before running the deployment script
 
 You can supply your AWS credentials by creating a `.env` file in the root folder of this project. Check the `.env.example` file to see how the variables should be named.
 
-#### Asset info file
+#### Asset pack thumbnail
+
+Add a `thumbnail.png` file to an asset pack folder for it to be the thumbnail of that pack.
+
+#### Asset pack info file
 
 The file must be called `info.json` and it should have the following properties (example from `MiniTown`, AKA `Genesis City`):
 
