@@ -26,9 +26,10 @@ export class AssetPack {
   async bundle(contentServerURL: string = DEFAULT_CONTENT_SERVER_URL) {
     const assetDirList = getDirectories(this.directory)
 
-    log.info(`Processing ${assetDirList.length} assets`)
+    log.info(`Processing ${assetDirList.length} assets in ${this.directory}`)
     for (const assetDir of assetDirList) {
       try {
+        // TODO: this could be a single method
         const asset = await Asset.build(assetDir).fill(contentServerURL)
 
         this.assets.push(asset)
@@ -36,11 +37,11 @@ export class AssetPack {
         log.error(`Processing : ${assetDir} ${err}`)
       }
     }
-    log.info(`Found ${this.assets.length} valid assets`)
+    log.info(`Found ${this.assets.length} valid assets in ${this.directory}`)
   }
 
   async upload(bucketName: string) {
-    const batchSize = 15
+    const batchSize = 1
     let uploads: Promise<void>[] = []
 
     for (const [idx, asset] of this.assets.entries()) {

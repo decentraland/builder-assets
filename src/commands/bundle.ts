@@ -35,19 +35,25 @@ export function register(program) {
 }
 
 async function main(options: Options) {
+  const temporalDir = '__' + path.basename(options.src)
+
   try {
-    const directories = await getDirectories(options.src)
+    await fs.copy(options.src, temporalDir)
+
+    const directories = await getDirectories(temporalDir)
+    const skippedDirErrors: string[] = []
 
     for (const dirPath of directories) {
       const assetInfoPath = path.join(dirPath, ASSET_INFO_FILE_NAME)
+      const dirName = path.basename(dirPath)
 
       if (await fs.pathExists(assetInfoPath)) {
         const assetInfoContent = await fs.readFile(assetInfoPath, 'utf-8')
         const { id, title }: AssetInfo = JSON.parse(assetInfoContent)
 
         if (!id || !title) {
-          log.warn(
-            `Malformed "${ASSET_INFO_FILE_NAME}" file for "${dirPath}". Check the README for an example`
+          skippedDirErrors.push(
+            `Malformed "${ASSET_INFO_FILE_NAME}" file for "${dirName}". Check the README for an example`
           )
           continue
         }
@@ -55,13 +61,19 @@ async function main(options: Options) {
         const assetPack = new AssetPack(id, title, dirPath)
         await uploadAssetPack(assetPack, options)
       } else {
-        log.warn(
-          `Skipping "${dirPath}" because the "${ASSET_INFO_FILE_NAME}" file is missing. Check the README for an example`
+        skippedDirErrors.push(
+          `Skipped "${dirName}" because the "${ASSET_INFO_FILE_NAME}" file is missing. Check the README for an example`
         )
       }
     }
+
+    if (skippedDirErrors.length) {
+      log.warn(`Errors:\n\t - ${skippedDirErrors.join('\n\t - ')}`)
+    }
   } catch (err) {
     log.error(err)
+  } finally {
+    await fs.remove(temporalDir)
   }
 
   process.exit()

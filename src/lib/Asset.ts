@@ -6,7 +6,7 @@ import * as gltfPipeline from 'gltf-pipeline'
 
 import { CIDUtils } from './CIDUtils'
 import { getSHA256 } from './crypto'
-import { getFiles, getRootDir, getRelativeDir } from './files'
+import { getFiles, getRelativeDir } from './files'
 import { checkFile, uploadFile } from './s3'
 
 const ASSET_RESOURCE_FORMATS = ['.glb', '.gltf', '.png', '.jpg', '.bin']
@@ -100,12 +100,10 @@ export class Asset {
 
   async saveContentTextures() {
     const contentFilePaths = this.getScenes()
-    const rootDir = getRootDir(this.directory)
-    const outTexturesDir = this.directory.replace(rootDir, rootDir + '-deploy')
 
     for (const contentFilePath of contentFilePaths) {
       try {
-        await saveTexturesFromGLB(contentFilePath, outTexturesDir)
+        await saveTexturesFromGLB(contentFilePath, this.directory)
       } catch (err) {
         log.error(`Error trying to save textures from glb ${err.message}`)
       }
