@@ -1,6 +1,10 @@
 import * as AWS from 'aws-sdk'
 import { env, utils } from 'decentraland-commons'
 
+console.log({
+  accessKeyId: env.get('AWS_ACCESS_KEY'),
+  secretAccessKey: env.get('AWS_ACCESS_SECRET')
+})
 export const s3 = new AWS.S3({
   accessKeyId: env.get('AWS_ACCESS_KEY'),
   secretAccessKey: env.get('AWS_ACCESS_SECRET')
@@ -15,8 +19,15 @@ export async function checkFile(
     Key: key
   }
   const headObject = utils.promisify<boolean>(s3.headObject.bind(s3))
-  const result = await headObject(params)
-  return !!result
+  try {
+    await headObject(params)
+    return true
+  } catch (error) {
+    if (error.code === 'NotFound') {
+      return false
+    }
+    throw error
+  }
 }
 
 export function uploadFile(
