@@ -15,10 +15,6 @@ export class AssetInfo {
   id: Properties['id']
   title: Properties['title']
 
-  static async read(dirPath: string) {
-    return new AssetInfo(dirPath).read()
-  }
-
   constructor(dirPath: string) {
     this.dirPath = dirPath
   }
