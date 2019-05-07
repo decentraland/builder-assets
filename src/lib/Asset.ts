@@ -5,7 +5,7 @@ import * as url from 'url'
 import { Log } from 'decentraland-commons'
 import * as gltfPipeline from 'gltf-pipeline'
 
-import { getFileCID } from './CIDUtils'
+import { CIDUtils } from './CIDUtils'
 import { getSHA256 } from './crypto'
 import { getFiles, getRelativeDir } from './files'
 import { checkFile, uploadFile } from './s3'
@@ -66,23 +66,23 @@ export class Asset {
       throw new Error(`Asset must have a category`)
     }
 
-    if (this.tags.indexOf(this.category) === -1) {
-      throw new Error(`Asset must have a category from the included tags`)
-    }
+    // if (this.tags.indexOf(this.category) === -1) {
+    //   throw new Error(`Asset must have a category from the included tags`)
+    // }
   }
 
   async fill(contentServerURL: string): Promise<Asset> {
     // Thumb
     const thumbnailPath = path.join(this.dir, THUMB_FILE_NAME)
-    const cid = await getFileCID(thumbnailPath)
-    this.thumbnail = url.resolve(contentServerURL, 'contents/' + cid)
+    const { cid } = await new CIDUtils(thumbnailPath).getFilePathCID()
+    this.thumbnail = contentServerURL + '/' + cid
 
     // Contents
     await this.saveContentTextures()
 
     const contentFilePaths = this.getResources()
     for (const contentFilePath of contentFilePaths) {
-      const cid = await getFileCID(contentFilePath)
+      const { cid } = await new CIDUtils(contentFilePath).getFilePathCID()
       this.contents[getRelativeDir(contentFilePath)] = cid
     }
 
