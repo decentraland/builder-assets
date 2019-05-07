@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra'
 import * as path from 'path'
 
-// TODO: promisify
+// TODO: promisify?
 export const isDirectory = (source: string): boolean =>
   fs.lstatSync(source).isDirectory()
 

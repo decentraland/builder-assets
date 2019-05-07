@@ -1,4 +1,4 @@
-import * as fs from 'fs'
+import * as fs from 'fs-extra'
 import * as path from 'path'
 
 import { Log } from 'decentraland-commons'
@@ -27,11 +27,11 @@ export class Asset {
   contents: Record<string, string> = {}
   directory: string = ''
 
-  static build(assetDir: string): Asset {
+  static async build(assetDir: string): Promise<Asset> {
     log.info(`Reading : ${assetDir}...`)
 
     const filepath = path.join(assetDir, ASSET_FILE_NAME)
-    const assetData = fs.readFileSync(filepath)
+    const assetData = await fs.readFile(filepath)
     const assetJSON = JSON.parse(assetData.toString())
 
     return new Asset(
@@ -70,6 +70,7 @@ export class Asset {
       throw new Error(`Asset must have a category`)
     }
 
+    // TODO: Is this check necessary?
     // if (this.tags.indexOf(this.category) === -1) {
     //   throw new Error(`Asset must have a category from the included tags`)
     // }
@@ -81,15 +82,22 @@ export class Asset {
     const { cid } = await new CIDUtils(thumbnailPath).getFilePathCID()
     this.thumbnail = contentServerURL + '/' + cid
 
-    // Contents
+    // Textures
     await this.saveContentTextures()
 
-    // TODO: Batch or Promise.all([cids])
+    // Content
     const contentFilePaths = this.getResources()
+    const fileCIDs: Promise<void>[] = []
     for (const contentFilePath of contentFilePaths) {
-      const { cid } = await new CIDUtils(contentFilePath).getFilePathCID()
-      this.contents[getRelativeDir(contentFilePath)] = cid
+      const fileCID = new CIDUtils(contentFilePath)
+        .getFilePathCID()
+        .then(({ cid }) => {
+          this.contents[getRelativeDir(contentFilePath)] = cid
+        })
+
+      fileCIDs.push(fileCID)
     }
+    await Promise.all(fileCIDs)
 
     // Entry point
     const sceneFilePath = Object.keys(this.contents).find(isAssetScene) || ''
@@ -129,8 +137,7 @@ export class Asset {
 
         if (!isFileUploaded) {
           const contentFullPath = path.join(assetPackDir, contentFilePath)
-          // TODO: Promisified fs
-          const contentData = fs.readFileSync(contentFullPath)
+          const contentData = await fs.readFile(contentFullPath)
           return uploadFile(bucketName, contentCID, contentData)
         }
       }
@@ -179,20 +186,23 @@ export async function saveTexturesFromGLB(
   const options = {
     separateTextures: true
   }
-  // TODO: Promisified fs
-  const data = fs.readFileSync(srcFilePath)
+  const data = await fs.readFile(srcFilePath)
 
   // TODO: npm install defenetly typed
   const results = await gltfPipeline.processGlb(data, options)
   const glbFilePath = path.join(outDir, path.basename(srcFilePath))
-  fs.writeFileSync(glbFilePath, results.glb)
+  const writeOperations: Promise<any>[] = []
+
+  writeOperations.push(fs.writeFile(glbFilePath, results.glb))
 
   const separateResources = results.separateResources
   for (const relativePath in separateResources) {
     if (separateResources.hasOwnProperty(relativePath)) {
       const resource = separateResources[relativePath]
       const resourceFilePath = path.join(outDir, relativePath)
-      fs.writeFileSync(resourceFilePath, resource)
+      writeOperations.push(fs.writeFile(resourceFilePath, resource))
     }
   }
+
+  await Promise.all(writeOperations)
 }
