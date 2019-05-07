@@ -1,10 +1,6 @@
 import * as AWS from 'aws-sdk'
 import { env, utils } from 'decentraland-commons'
 
-console.log({
-  accessKeyId: env.get('AWS_ACCESS_KEY'),
-  secretAccessKey: env.get('AWS_ACCESS_SECRET')
-})
 export const s3 = new AWS.S3({
   accessKeyId: env.get('AWS_ACCESS_KEY'),
   secretAccessKey: env.get('AWS_ACCESS_SECRET')

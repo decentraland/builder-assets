@@ -18,12 +18,14 @@
   },
   "homepage": "https://github.com/decentraland/builder-assets#readme",
   "dependencies": {
+    "@types/fs-extra": "^5.1.0",
     "aws-sdk": "^2.396.0",
     "decentraland-commons": "^5.1.0",
     "decentraland-server": "^2.0.1",
+    "fs-extra": "^7.0.1",
     "gltf-pipeline": "^2.1.0",
     "interface-datastore": "0.6.0",
-    "ipfs-unixfs-engine": "0.32.4",
+    "ipfs-unixfs-engine": "^0.34.0",
     "tslint": "^5.12.1",
     "uuid": "^3.3.2"
   },

@@ -6,7 +6,7 @@ import * as gltfPipeline from 'gltf-pipeline'
 
 import { CIDUtils } from './CIDUtils'
 import { getSHA256 } from './crypto'
-import { getFiles, getRelativeDir } from './files'
+import { getFiles, getRootDir, getRelativeDir } from './files'
 import { checkFile, uploadFile } from './s3'
 
 const ASSET_RESOURCE_FORMATS = ['.glb', '.gltf', '.png', '.jpg', '.bin']
@@ -25,7 +25,7 @@ export class Asset {
   url: string = ''
   variations: string[] = []
   contents: Record<string, string> = {}
-  dir: string = ''
+  directory: string = ''
 
   static build(assetDir: string): Asset {
     log.info(`Reading : ${assetDir}...`)
@@ -42,9 +42,14 @@ export class Asset {
     )
   }
 
-  constructor(dir: string, name: string, category: string, tags: string[]) {
-    this.id = getSHA256(path.basename(dir))
-    this.dir = dir
+  constructor(
+    directory: string,
+    name: string,
+    category: string,
+    tags: string[]
+  ) {
+    this.id = getSHA256(path.basename(directory))
+    this.directory = directory
     this.name = name
     this.category = category
     this.tags = tags
@@ -72,7 +77,7 @@ export class Asset {
 
   async fill(contentServerURL: string): Promise<Asset> {
     // Thumb
-    const thumbnailPath = path.join(this.dir, THUMB_FILE_NAME)
+    const thumbnailPath = path.join(this.directory, THUMB_FILE_NAME)
     const { cid } = await new CIDUtils(thumbnailPath).getFilePathCID()
     this.thumbnail = contentServerURL + '/' + cid
 
@@ -95,9 +100,12 @@ export class Asset {
 
   async saveContentTextures() {
     const contentFilePaths = this.getScenes()
+    const rootDir = getRootDir(this.directory)
+    const outTexturesDir = this.directory.replace(rootDir, rootDir + '-deploy')
+
     for (const contentFilePath of contentFilePaths) {
       try {
-        await saveTexturesFromGLB(contentFilePath, this.dir)
+        await saveTexturesFromGLB(contentFilePath, outTexturesDir)
       } catch (err) {
         log.error(`Error trying to save textures from glb ${err.message}`)
       }
@@ -113,7 +121,7 @@ export class Asset {
   }
 
   getFiles() {
-    return getFiles(this.dir + '/')
+    return getFiles(this.directory + '/')
   }
 
   async upload(bucketName: string, assetPackDir: string) {
@@ -166,7 +174,10 @@ const isAssetScene = isAssetFormat(ASSET_SCENE_FORMATS)
 
 // Save files
 
-const saveTexturesFromGLB = (srcFilePath: string, dstDir: string = '.') => {
+export async function saveTexturesFromGLB(
+  srcFilePath: string,
+  outDir: string = '.'
+) {
   const options = {
     separateTextures: true
   }
@@ -174,17 +185,16 @@ const saveTexturesFromGLB = (srcFilePath: string, dstDir: string = '.') => {
   const data = fs.readFileSync(srcFilePath)
 
   // TODO: npm install defenetly typed
-  return gltfPipeline.processGlb(data, options).then(results => {
-    const glbFilePath = path.join(dstDir, path.basename(srcFilePath))
-    fs.writeFileSync(glbFilePath, results.glb)
+  const results = await gltfPipeline.processGlb(data, options)
+  const glbFilePath = path.join(outDir, path.basename(srcFilePath))
+  fs.writeFileSync(glbFilePath, results.glb)
 
-    const separateResources = results.separateResources
-    for (const relativePath in separateResources) {
-      if (separateResources.hasOwnProperty(relativePath)) {
-        const resource = separateResources[relativePath]
-        const resourceFilePath = path.join(dstDir, relativePath)
-        fs.writeFileSync(resourceFilePath, resource)
-      }
+  const separateResources = results.separateResources
+  for (const relativePath in separateResources) {
+    if (separateResources.hasOwnProperty(relativePath)) {
+      const resource = separateResources[relativePath]
+      const resourceFilePath = path.join(outDir, relativePath)
+      fs.writeFileSync(resourceFilePath, resource)
     }
-  })
+  }
 }

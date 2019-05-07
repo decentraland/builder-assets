@@ -15,10 +15,8 @@ export class AssetPack {
   directory: string
   assets: Asset[]
 
-  constructor(title: string, directory: string) {
-    // this.id = uuidv4()
-    // TODO: hack only for first builder asset pack
-    this.id = 'e6fa9601-3e47-4dff-9a84-e8e017add15a'
+  constructor(id: string, title: string, directory: string) {
+    this.id = id
     this.version = 1
     this.title = title
     this.directory = directory
@@ -52,18 +50,29 @@ export class AssetPack {
         await Promise.all(uploads)
         uploads = []
       }
-      log.info(`(${asset.dir}) uploaded ${idx + 1}/${this.assets.length}`)
+      log.info(`(${asset.directory}) uploaded ${idx + 1}/${this.assets.length}`)
     }
     await Promise.all(uploads)
   }
 
+  // TODO: Promisify
   save(outPath: string) {
     // HACK: this result format is to return like a server request
     const result = {
       ok: true,
-      data: this
+      data: this.toJSON()
     }
     const data = JSON.stringify(result, null, 2)
     fs.writeFileSync(outPath, data)
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      version: this.version,
+      title: this.title,
+      directory: this.directory,
+      assets: this.assets.map(asset => asset.toJSON())
+    }
   }
 }
