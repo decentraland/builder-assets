@@ -43,7 +43,9 @@ export class CIDUtils {
         if (err) {
           reject(err)
         }
-        resolve({ cid: content, name: file.path })
+
+        const cid = new CID(content).toBaseEncodedString()
+        resolve({ cid, name: file.path })
       })
     )
   }

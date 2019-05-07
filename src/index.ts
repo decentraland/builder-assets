@@ -1,4 +1,4 @@
-import { cli } from 'decentraland-server'
+import { runProgram } from 'decentraland-server/dist/cli'
 
 import * as bundle from './commands/bundle'
 
@@ -10,7 +10,7 @@ const getProgram = () => {
   }
 }
 
-const main = () => cli.runProgram([getProgram()])
+const main = () => runProgram([getProgram()])
 
 if (require.main === module) {
   Promise.resolve()

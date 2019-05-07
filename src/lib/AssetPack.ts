@@ -1,10 +1,7 @@
 import * as fs from 'fs'
-import * as path from 'path'
-// import * as uuidv4 from 'uuid/v4'
-
 import { Log } from 'decentraland-commons'
 
-import { Asset } from './asset'
+import { Asset } from './Asset'
 import { getDirectories } from './files'
 
 const DEFAULT_CONTENT_SERVER_URL = 'https://content.decentraland.today'
