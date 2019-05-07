@@ -2,23 +2,17 @@ import * as fs from 'fs-extra'
 import * as path from 'path'
 import { Log } from 'decentraland-commons'
 
+import { AssetInfo, FILE_NAME as ASSET_INFO_FILE_NAME } from '../lib/AssetInfo'
 import { AssetPack } from '../lib/AssetPack'
 import { getDirectories } from '../lib/files'
 
 const log = new Log('cmd::bundle')
-const ASSET_INFO_FILE_NAME = 'info.json'
 
 type Options = {
   src: string
   contentServer: string
   bucket: string
   out: string
-}
-
-// TODO: Move to it's own file
-type AssetInfo = {
-  id: string
-  title: string
 }
 
 export function register(program) {
@@ -44,25 +38,17 @@ async function main(options: Options) {
     const skippedDirErrors: string[] = []
 
     for (const dirPath of directories) {
-      const assetInfoPath = path.join(dirPath, ASSET_INFO_FILE_NAME)
-      const dirName = path.basename(dirPath)
+      const assetInfo = new AssetInfo(dirPath)
+      await assetInfo.read()
 
-      if (await fs.pathExists(assetInfoPath)) {
-        const assetInfoContent = await fs.readFile(assetInfoPath, 'utf-8')
-        const { id, title }: AssetInfo = JSON.parse(assetInfoContent)
-
-        if (!id || !title) {
-          skippedDirErrors.push(
-            `Malformed "${ASSET_INFO_FILE_NAME}" file for "${dirName}". Check the README for an example`
-          )
-          continue
-        }
-
-        const assetPack = new AssetPack(id, title, dirPath)
+      if (assetInfo.isValid()) {
+        const { id, title } = assetInfo.toJSON()
+        const assetPack = new AssetPack(id!, title!, dirPath)
         await uploadAssetPack(assetPack, options)
       } else {
+        const dirName = path.basename(dirPath)
         skippedDirErrors.push(
-          `Skipped "${dirName}" because the "${ASSET_INFO_FILE_NAME}" file is missing. Check the README for an example`
+          `Skipped "${dirName}" because the "${ASSET_INFO_FILE_NAME}" file is missing or malformed. Check the README for an example`
         )
       }
     }
