@@ -8,7 +8,7 @@ type Properties = {
 
 export const FILE_NAME = 'info.json'
 
-export class AssetInfo {
+export class AssetPackInfo {
   dirPath: string
 
   id: Properties['id']

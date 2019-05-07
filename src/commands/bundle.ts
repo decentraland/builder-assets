@@ -2,7 +2,10 @@ import * as fs from 'fs-extra'
 import * as path from 'path'
 import { Log } from 'decentraland-commons'
 
-import { AssetInfo, FILE_NAME as ASSET_INFO_FILE_NAME } from '../lib/AssetInfo'
+import {
+  AssetPackInfo,
+  FILE_NAME as ASSET_INFO_FILE_NAME
+} from '../lib/AssetPackInfo'
 import { AssetPack } from '../lib/AssetPack'
 import { Manifest } from '../lib/Manifest'
 import { getDirectories } from '../lib/files'
@@ -45,11 +48,11 @@ async function main(options: Options) {
     const skippedDirErrors: string[] = []
 
     for (const dirPath of directories) {
-      const assetInfo = new AssetInfo(dirPath)
-      await assetInfo.read()
+      const assetPackInfo = new AssetPackInfo(dirPath)
+      await assetPackInfo.read()
 
-      if (assetInfo.isValid()) {
-        const { id, title } = assetInfo.toJSON()
+      if (assetPackInfo.isValid()) {
+        const { id, title } = assetPackInfo.toJSON()
         const assetPack = new AssetPack(id!, title!, dirPath)
 
         await uploadAssetPack(assetPack, options)
