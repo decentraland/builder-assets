@@ -42,8 +42,9 @@ export class AssetPack {
   }
 
   async upload(bucketName: string) {
-    const batchSize = 10
+    const batchSize = 15
     let uploads: Promise<void>[] = []
+
     for (const [idx, asset] of this.assets.entries()) {
       uploads.push(asset.upload(bucketName, this.directory))
 

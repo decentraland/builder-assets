@@ -79,6 +79,7 @@ export class Asset {
     // Contents
     await this.saveContentTextures()
 
+    // TODO: Batch or Promise.all([cids])
     const contentFilePaths = this.getResources()
     for (const contentFilePath of contentFilePaths) {
       const { cid } = await new CIDUtils(contentFilePath).getFilePathCID()
@@ -118,11 +119,12 @@ export class Asset {
   async upload(bucketName: string, assetPackDir: string) {
     const uploads = Object.entries(this.contents).map(
       async ([contentFilePath, contentCID]) => {
-        const contentFullPath = path.join(assetPackDir, contentFilePath)
-        const contentData = fs.readFileSync(contentFullPath)
         const isFileUploaded = await checkFile(bucketName, contentCID)
 
         if (!isFileUploaded) {
+          const contentFullPath = path.join(assetPackDir, contentFilePath)
+          // TODO: Promisified fs
+          const contentData = fs.readFileSync(contentFullPath)
           return uploadFile(bucketName, contentCID, contentData)
         }
       }
@@ -168,6 +170,7 @@ const saveTexturesFromGLB = (srcFilePath: string, dstDir: string = '.') => {
   const options = {
     separateTextures: true
   }
+  // TODO: Promisified fs
   const data = fs.readFileSync(srcFilePath)
 
   // TODO: npm install defenetly typed
