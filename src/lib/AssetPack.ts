@@ -1,8 +1,9 @@
-import * as fs from 'fs'
+import * as path from 'path'
 import { Log } from 'decentraland-commons'
 
 import { Asset } from './Asset'
 import { getDirectories } from './files'
+import { writeFileAsServerRequest } from './utils'
 
 const DEFAULT_CONTENT_SERVER_URL = 'https://content.decentraland.today'
 
@@ -56,15 +57,9 @@ export class AssetPack {
     await Promise.all(uploads)
   }
 
-  // TODO: Promisify
-  save(outPath: string) {
-    // HACK: this result format is to return like a server request
-    const result = {
-      ok: true,
-      data: this.toJSON()
-    }
-    const data = JSON.stringify(result, null, 2)
-    fs.writeFileSync(outPath, data)
+  async save(outPath: string) {
+    const filePath = path.join(outPath, `${this.id}.json`)
+    return writeFileAsServerRequest(filePath, this.toJSON())
   }
 
   toJSON() {
@@ -72,7 +67,6 @@ export class AssetPack {
       id: this.id,
       version: this.version,
       title: this.title,
-      directory: this.directory,
       assets: this.assets.map(asset => asset.toJSON())
     }
   }

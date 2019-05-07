@@ -31,5 +31,7 @@ You can use [uuid generator](https://www.uuidgenerator.net/)
 
 ```bash
 cd builder-assets
-npm run bundle -- --src ./assets
+npm run bundle -- --src ./assets  --bucket AWS_BUCKET --content-server CONTENT_SERVER_URL --url https://SOME_URL_HERE
 ```
+
+Run `npm run bundle -- --help` to see the help in the terminal
