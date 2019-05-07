@@ -1,5 +1,6 @@
 import * as fs from 'fs-extra'
 import * as path from 'path'
+import { Log } from 'decentraland-commons'
 
 import { AssetPack } from './AssetPack'
 import { writeFileAsServerRequest } from './utils'
@@ -10,6 +11,8 @@ type ManifestAssetPack = {
   thumbnail: string
   url: string
 }
+
+const log = new Log('Manifest')
 
 export class Manifest {
   outDir: string
@@ -39,6 +42,7 @@ export class Manifest {
   ]
 }`
     const nowIndexPath = path.join(this.outDir, 'now.json')
+    log.info('Writing server routes')
     return fs.writeFile(nowIndexPath, nowIndex)
   }
 
@@ -46,11 +50,13 @@ export class Manifest {
     const packs: ManifestAssetPack[] = []
     const indexPath = path.join(this.outDir, 'index.json')
 
+    log.info('Writing index file')
+
     for (const assetPack of assetPacks) {
       packs.push({
         id: assetPack.id,
         title: assetPack.title,
-        thumbnail: `https://${this.resultURL}/${assetPack.id}.png`,
+        thumbnail: `${this.resultURL}/${assetPack.id}.png`,
         url: `/${assetPack.id}.json`
       })
     }

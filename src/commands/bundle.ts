@@ -7,8 +7,6 @@ import { AssetPack } from '../lib/AssetPack'
 import { Manifest } from '../lib/Manifest'
 import { getDirectories } from '../lib/files'
 
-const log = new Log('cmd::bundle')
-
 type Options = {
   src: string
   contentServer: string
@@ -16,6 +14,8 @@ type Options = {
   out: string
   url: string
 }
+
+const log = new Log('cmd::bundle')
 
 export function register(program) {
   // TODO: Add a skip flag
@@ -75,6 +75,7 @@ async function main(options: Options) {
     await fs.remove(temporalDir)
   }
 
+  log.info('All done!')
   process.exit()
 }
 

@@ -5,8 +5,6 @@ import { Asset } from './Asset'
 import { getDirectories } from './files'
 import { writeFileAsServerRequest } from './utils'
 
-const DEFAULT_CONTENT_SERVER_URL = 'https://content.decentraland.today'
-
 const log = new Log('AssetPack')
 
 export class AssetPack {
@@ -24,7 +22,7 @@ export class AssetPack {
     this.assets = []
   }
 
-  async bundle(contentServerURL: string = DEFAULT_CONTENT_SERVER_URL) {
+  async bundle(contentServerURL: string) {
     const assetDirList = getDirectories(this.directory)
 
     log.info(`Processing ${assetDirList.length} assets in ${this.directory}`)

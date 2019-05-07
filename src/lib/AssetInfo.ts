@@ -1,7 +1,6 @@
 import * as fs from 'fs-extra'
 import * as path from 'path'
 
-// TODO: Move to it's own file
 type Properties = {
   id: string | undefined
   title: string | undefined
