@@ -35,7 +35,9 @@ You can use [uuid generator](https://www.uuidgenerator.net/)
 
 ```bash
 cd builder-assets
-npm run bundle -- --src ./assets  --bucket AWS_BUCKET --content-server CONTENT_SERVER_URL --url https://SOME_URL_HERE
+npm run bundle -- --src ./assets  --bucket AWS_BUCKET --content-server CONTENT_SERVER_URL --out ./out/path --url https://ALIAS.now.sh
+cd ./out/path
+now alias $(now --scope decentraland) ALIAS
 ```
 
 Run `npm run bundle -- --help` to see the help in the terminal
