@@ -59,8 +59,8 @@ async function main(options: Options) {
         uploadedAssetPacks.push(assetPack)
       } else {
         const dirName = path.basename(dirPath)
-        skippedDirErrors.push(
-          `Skipped "${dirName}" because the "${ASSET_INFO_FILE_NAME}" file is missing or malformed. Check the README for an example`
+        throw new Error(
+          `"${ASSET_INFO_FILE_NAME}" file missing or malformed for "${dirName}". Check the README for an example`
         )
       }
     }
