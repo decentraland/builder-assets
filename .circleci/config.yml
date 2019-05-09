@@ -1,0 +1,60 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:10.15.1
+    working_directory: /tmp/app
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dependencies-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install packages
+          command: npm ci
+      - save_cache:
+          paths:
+            - node_modules
+          key: dependencies-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install now
+          command: sudo npm install --global --unsafe-perm now
+      - run:
+          name: Generate manifest and upload assets
+          command: mkdir -p build && npm run bundle -- --src ./assets  --bucket ${AWS_BUCKET_NAME} --content-server ${CONTENT_SERVER_URL} --out ./build --url ${MANIFEST_URL}
+      - run:
+          name: Deploy to now.sh
+          command: now alias $(now --scope decentraland --name builder-pack --token $NOW_TOKEN ./build) ${NOW_ALIAS} --scope decentraland --token $NOW_TOKEN
+
+workflows:
+  version: 2
+  build-deploy-release:
+    jobs:
+      - build:
+          context: builder-assets-prd
+          filters:
+            branches:
+              only: release
+  build-deploy-staging:
+    jobs:
+      - build:
+          context: builder-assets-stg
+          filters:
+            branches:
+              only: staging
+  build-deploy-master:
+    jobs:
+      - build:
+          context: builder-assets-dev
+          filters:
+            branches:
+              only: master
+  build-branch:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore:
+                - master
+                - staging
+                - release
