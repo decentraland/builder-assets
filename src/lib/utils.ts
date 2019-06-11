@@ -1,9 +1,6 @@
 import * as fs from 'fs-extra'
 
-export async function writeFileAsServerRequest<T = any>(
-  outPath: string,
-  data: T
-) {
+export async function writeFileAsServerRequest<T = any>(outPath: string, data: T) {
   const fileContents = JSON.stringify(asServerRequest(data), null, 2)
   return fs.writeFile(outPath, fileContents)
 }

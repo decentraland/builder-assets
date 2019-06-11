@@ -16,6 +16,7 @@ type Options = {
   bucket: string
   out: string
   url: string
+  force: boolean
 }
 
 const log = new Log('cmd::bundle')
@@ -32,6 +33,8 @@ export function register(program) {
     .option('--content-server [contentServerURL]', 'Content server URL')
     .option('--out [assetPackOut]', 'Path to the asset pack descriptor output')
     .option('--url [url]', 'URL where the assets where be served')
+    .option('--force', 'Skip Hash comparison', false)
+
     .action(main)
 }
 
@@ -90,7 +93,7 @@ async function uploadAssetPack(assetPack: AssetPack, options: Options) {
   }
 
   if (options.bucket) {
-    await assetPack.upload(options.bucket)
+    await assetPack.upload(options.bucket, options.force)
   }
 }
 

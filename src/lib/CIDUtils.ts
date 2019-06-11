@@ -50,10 +50,7 @@ export class CIDUtils {
     )
   }
 
-  private importIPFSFile(
-    file: IFile,
-    callback: (err: string, content: string) => void
-  ) {
+  private importIPFSFile(file: IFile, callback: (err: string, content: string) => void) {
     const importer = new Importer(new MemoryDatastore(), { onlyHash: true })
 
     pull(

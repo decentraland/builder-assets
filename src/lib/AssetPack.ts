@@ -56,11 +56,11 @@ export class AssetPack {
     }
   }
 
-  async upload(bucketName: string) {
+  async upload(bucketName: string, skipCheck: boolean) {
     let uploads: Promise<void>[] = []
 
     for (const [index, asset] of this.assets.entries()) {
-      uploads.push(asset.upload(bucketName, this.directory))
+      uploads.push(asset.upload(bucketName, this.directory, skipCheck))
 
       if (index % BATCH_SIZE === 0) {
         await Promise.all(uploads)
