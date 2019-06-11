@@ -66,7 +66,9 @@ export class AssetPack {
         await Promise.all(uploads)
         uploads = []
       }
-      log.info(`(${asset.directory}) uploaded ${index + 1}/${this.assets.length}`)
+      log.info(
+        `(${asset.directory}) uploaded ${index + 1}/${this.assets.length}`
+      )
     }
     await Promise.all(uploads)
   }

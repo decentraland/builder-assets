@@ -28,7 +28,12 @@ export class Asset {
   contents: Record<string, string> = {}
   directory: string = ''
 
-  constructor(directory: string, name: string, category: string, tags: string[]) {
+  constructor(
+    directory: string,
+    name: string,
+    category: string,
+    tags: string[]
+  ) {
     this.id = getSHA256(path.basename(directory))
     this.directory = directory
     this.name = name
@@ -45,7 +50,12 @@ export class Asset {
     const assetData = await fs.readFile(filepath)
     const assetJSON = JSON.parse(assetData.toString())
 
-    return new Asset(assetDir, assetJSON.name, assetJSON.category, assetJSON.tags)
+    return new Asset(
+      assetDir,
+      assetJSON.name,
+      assetJSON.category,
+      assetJSON.tags
+    )
   }
 
   check() {
@@ -80,9 +90,11 @@ export class Asset {
     const contentFilePaths = this.getResources()
     const fileCIDs: Promise<void>[] = []
     for (const contentFilePath of contentFilePaths) {
-      const fileCID = new CIDUtils(contentFilePath).getFilePathCID().then(({ cid }) => {
-        this.contents[getRelativeDir(contentFilePath)] = cid
-      })
+      const fileCID = new CIDUtils(contentFilePath)
+        .getFilePathCID()
+        .then(({ cid }) => {
+          this.contents[getRelativeDir(contentFilePath)] = cid
+        })
 
       fileCIDs.push(fileCID)
     }
@@ -120,16 +132,20 @@ export class Asset {
   }
 
   async upload(bucketName: string, assetPackDir: string, skipCheck: boolean) {
-    const uploads = Object.entries(this.contents).map(async ([contentFilePath, contentCID]) => {
-      const isFileUploaded = skipCheck ? false : await checkFile(bucketName, contentCID)
-      const contentType = mime.getType(contentFilePath)
+    const uploads = Object.entries(this.contents).map(
+      async ([contentFilePath, contentCID]) => {
+        const isFileUploaded = skipCheck
+          ? false
+          : await checkFile(bucketName, contentCID)
+        const contentType = mime.getType(contentFilePath)
 
-      if (!isFileUploaded) {
-        const contentFullPath = path.join(assetPackDir, contentFilePath)
-        const contentData = await fs.readFile(contentFullPath)
-        return uploadFile(bucketName, contentType, contentCID, contentData)
+        if (!isFileUploaded) {
+          const contentFullPath = path.join(assetPackDir, contentFilePath)
+          const contentData = await fs.readFile(contentFullPath)
+          return uploadFile(bucketName, contentType, contentCID, contentData)
+        }
       }
-    })
+    )
 
     await Promise.all(uploads)
   }
@@ -167,7 +183,10 @@ const isAssetScene = isAssetFormat(ASSET_SCENE_FORMATS)
 
 // Save files
 
-export async function saveTexturesFromGLB(srcFilePath: string, outDir: string = '.') {
+export async function saveTexturesFromGLB(
+  srcFilePath: string,
+  outDir: string = '.'
+) {
   const options = {
     separateTextures: true
   }

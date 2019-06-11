@@ -20,7 +20,7 @@
   "prettier": {
     "semi": false,
     "singleQuote": true,
-    "printWidth": 140
+    "printWidth": 80
   },
   "dependencies": {
     "@types/fs-extra": "^5.1.0",
