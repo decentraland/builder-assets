@@ -28,6 +28,7 @@ export async function checkFile(
 
 export function uploadFile(
   bucketName: string,
+  contentType: string,
   key: string,
   data: Buffer
 ): Promise<AWS.S3.ManagedUpload> {
@@ -35,7 +36,8 @@ export function uploadFile(
     Bucket: bucketName,
     Key: key,
     Body: data,
-    ACL: 'public-read'
+    ACL: 'public-read',
+    ContentType: contentType
   }
   const upload = utils.promisify<AWS.S3.ManagedUpload>(s3.upload.bind(s3))
   return upload(params)

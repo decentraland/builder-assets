@@ -1,5 +1,6 @@
 import * as fs from 'fs-extra'
 import * as path from 'path'
+import * as mime from 'mime/lite'
 
 import { Log } from 'decentraland-commons'
 import * as gltfPipeline from 'gltf-pipeline'
@@ -27,27 +28,7 @@ export class Asset {
   contents: Record<string, string> = {}
   directory: string = ''
 
-  static async build(assetDir: string): Promise<Asset> {
-    log.info(`Reading : ${assetDir}...`)
-
-    const filepath = path.join(assetDir, ASSET_FILE_NAME)
-    const assetData = await fs.readFile(filepath)
-    const assetJSON = JSON.parse(assetData.toString())
-
-    return new Asset(
-      assetDir,
-      assetJSON.name,
-      assetJSON.category,
-      assetJSON.tags
-    )
-  }
-
-  constructor(
-    directory: string,
-    name: string,
-    category: string,
-    tags: string[]
-  ) {
+  constructor(directory: string, name: string, category: string, tags: string[]) {
     this.id = getSHA256(path.basename(directory))
     this.directory = directory
     this.name = name
@@ -55,6 +36,16 @@ export class Asset {
     this.tags = tags
 
     this.check()
+  }
+
+  static async build(assetDir: string): Promise<Asset> {
+    log.info(`Reading : ${assetDir}...`)
+
+    const filepath = path.join(assetDir, ASSET_FILE_NAME)
+    const assetData = await fs.readFile(filepath)
+    const assetJSON = JSON.parse(assetData.toString())
+
+    return new Asset(assetDir, assetJSON.name, assetJSON.category, assetJSON.tags)
   }
 
   check() {
@@ -89,11 +80,9 @@ export class Asset {
     const contentFilePaths = this.getResources()
     const fileCIDs: Promise<void>[] = []
     for (const contentFilePath of contentFilePaths) {
-      const fileCID = new CIDUtils(contentFilePath)
-        .getFilePathCID()
-        .then(({ cid }) => {
-          this.contents[getRelativeDir(contentFilePath)] = cid
-        })
+      const fileCID = new CIDUtils(contentFilePath).getFilePathCID().then(({ cid }) => {
+        this.contents[getRelativeDir(contentFilePath)] = cid
+      })
 
       fileCIDs.push(fileCID)
     }
@@ -130,18 +119,17 @@ export class Asset {
     return getFiles(this.directory + '/')
   }
 
-  async upload(bucketName: string, assetPackDir: string) {
-    const uploads = Object.entries(this.contents).map(
-      async ([contentFilePath, contentCID]) => {
-        const isFileUploaded = await checkFile(bucketName, contentCID)
+  async upload(bucketName: string, assetPackDir: string, skipCheck: boolean) {
+    const uploads = Object.entries(this.contents).map(async ([contentFilePath, contentCID]) => {
+      const isFileUploaded = skipCheck ? false : await checkFile(bucketName, contentCID)
+      const contentType = mime.getType(contentFilePath)
 
-        if (!isFileUploaded) {
-          const contentFullPath = path.join(assetPackDir, contentFilePath)
-          const contentData = await fs.readFile(contentFullPath)
-          return uploadFile(bucketName, contentCID, contentData)
-        }
+      if (!isFileUploaded) {
+        const contentFullPath = path.join(assetPackDir, contentFilePath)
+        const contentData = await fs.readFile(contentFullPath)
+        return uploadFile(bucketName, contentType, contentCID, contentData)
       }
-    )
+    })
 
     await Promise.all(uploads)
   }
@@ -179,10 +167,7 @@ const isAssetScene = isAssetFormat(ASSET_SCENE_FORMATS)
 
 // Save files
 
-export async function saveTexturesFromGLB(
-  srcFilePath: string,
-  outDir: string = '.'
-) {
+export async function saveTexturesFromGLB(srcFilePath: string, outDir: string = '.') {
   const options = {
     separateTextures: true
   }
