@@ -9,6 +9,13 @@ import { CIDUtils } from './CIDUtils'
 import { getSHA256 } from './crypto'
 import { getFiles, getRelativeDir } from './files'
 import { checkFile, uploadFile } from './s3'
+import {
+  AssetSchema,
+  File,
+  validateObject,
+  TYPE_NAMES
+} from 'nft-open-api/dist'
+import { AssetPack } from './AssetPack'
 
 const ASSET_RESOURCE_FORMATS = ['.glb', '.gltf', '.png', '.jpg', '.bin']
 const ASSET_SCENE_FORMATS = ['.glb']
@@ -32,7 +39,8 @@ export class Asset {
     directory: string,
     name: string,
     category: string,
-    tags: string[]
+    tags: string[],
+    public assetPack: AssetPack
   ) {
     this.id = getSHA256(path.basename(directory))
     this.directory = directory
@@ -43,7 +51,7 @@ export class Asset {
     this.check()
   }
 
-  static async build(assetDir: string): Promise<Asset> {
+  static async build(assetDir: string, assetPack: AssetPack): Promise<Asset> {
     log.info(`Reading : ${assetDir}...`)
 
     const filepath = path.join(assetDir, ASSET_FILE_NAME)
@@ -54,7 +62,8 @@ export class Asset {
       assetDir,
       assetJSON.name,
       assetJSON.category,
-      assetJSON.tags
+      assetJSON.tags,
+      assetPack
     )
   }
 
@@ -77,11 +86,11 @@ export class Asset {
     // }
   }
 
-  async fill(contentServerURL: string): Promise<Asset> {
+  async fill(): Promise<Asset> {
     // Thumb
     const thumbnailPath = path.join(this.directory, THUMB_FILE_NAME)
     const { cid } = await new CIDUtils(thumbnailPath).getFilePathCID()
-    this.thumbnail = contentServerURL + '/' + cid
+    this.thumbnail = this.assetPack.contentServerURL + '/' + cid
 
     // Textures
     await this.saveContentTextures()
@@ -150,17 +159,40 @@ export class Asset {
     await Promise.all(uploads)
   }
 
-  toJSON() {
-    return {
-      id: this.id,
-      name: this.name,
-      thumbnail: this.thumbnail,
-      url: this.url,
-      category: this.category,
-      tags: this.tags,
-      variations: this.variations,
-      contents: this.contents
+  toJSON(): AssetSchema {
+    const files: File[] = []
+
+    for (let key in this.contents) {
+      const cid = this.contents[key]
+      files.push({
+        name: key,
+        cid,
+        url: `${this.assetPack.contentServerURL}/${cid}`
+      })
     }
+
+    const ret: AssetSchema = {
+      name: this.name,
+      description: '',
+      token_id: this.id,
+      image: this.thumbnail,
+      uri: this.assetPack.contractUri + '/' + this.id,
+      files,
+      owner: '',
+      registry: this.assetPack.info.id!,
+      traits: [
+        { id: 'dcl:asset-pack:category', value: this.category },
+        ...this.tags.map(value => ({ id: 'dcl:asset-pack:tag', value })),
+        ...this.variations.map(value => ({
+          id: 'dcl:asset-pack:variation',
+          value
+        }))
+      ]
+    }
+
+    validateObject(TYPE_NAMES.AssetSchema, ret)
+
+    return ret
   }
 }
 

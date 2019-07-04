@@ -2,17 +2,17 @@ import * as fs from 'fs-extra'
 import * as path from 'path'
 
 type Properties = {
-  id: string | undefined
-  title: string | undefined
+  id?: string
+  title?: string
 }
 
 export const FILE_NAME = 'info.json'
 
-export class AssetPackInfo {
+export class AssetPackInfo implements Properties {
   dirPath: string
 
-  id: Properties['id']
-  title: Properties['title']
+  id?: string
+  title?: string
 
   constructor(dirPath: string) {
     this.dirPath = dirPath
@@ -38,9 +38,5 @@ export class AssetPackInfo {
 
   isValid() {
     return !!this.id && !!this.title
-  }
-
-  toJSON() {
-    return { id: this.id, title: this.title }
   }
 }

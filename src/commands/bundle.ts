@@ -11,11 +11,17 @@ import { Manifest } from '../lib/Manifest'
 import { getDirectories } from '../lib/files'
 
 type Options = {
+  /** Path to the asset packs content folder */
   src: string
+  /** Content server URL */
   contentServer: string
+  /** S3 bucket name to upload the asset pack contents */
   bucket: string
+  /** Path to the asset pack descriptor output */
   out: string
+  /** URL where the assets where be served */
   url: string
+  /** Skip Hash comparison */
   force: boolean
 }
 
@@ -55,8 +61,11 @@ async function main(options: Options) {
       await assetPackInfo.read()
 
       if (assetPackInfo.isValid()) {
-        const { id, title } = assetPackInfo.toJSON()
-        const assetPack = new AssetPack(id!, title!, dirPath)
+        const assetPack = new AssetPack(
+          assetPackInfo,
+          options.contentServer,
+          options.url
+        )
 
         await uploadAssetPack(assetPack, options)
         uploadedAssetPacks.push(assetPack)
@@ -77,6 +86,7 @@ async function main(options: Options) {
     }
   } catch (err) {
     log.error(err)
+    console.log(err.stacktrace || err.stack)
   } finally {
     await fs.remove(temporalDir)
   }
@@ -86,14 +96,10 @@ async function main(options: Options) {
 }
 
 async function uploadAssetPack(assetPack: AssetPack, options: Options) {
-  await assetPack.bundle(options.contentServer)
-
-  if (options.out) {
-    await assetPack.save(options.out)
-  }
+  await assetPack.bundle()
 
   if (options.bucket) {
-    await assetPack.upload(options.bucket, options.force)
+    // await assetPack.upload(options.bucket, options.force)
   }
 }
 

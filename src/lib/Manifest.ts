@@ -1,66 +1,73 @@
-import * as fs from 'fs-extra'
 import * as path from 'path'
 import { Log } from 'decentraland-commons'
 
 import { AssetPack } from './AssetPack'
-import { writeFileAsServerRequest } from './utils'
-
-type ManifestAssetPack = {
-  id: string
-  title: string
-  thumbnail: string
-  url: string
-}
+import { DARList, AssetList } from 'nft-open-api/dist'
+import { writeFileAsServerResponse } from './utils'
+import { mkdirSync } from 'fs'
 
 const log = new Log('Manifest')
 
 export class Manifest {
-  outDir: string
-  resultURL: string
+  darList: DARList = { registries: [] }
 
-  constructor(outDir: string, resultURL: string) {
-    this.outDir = outDir
-    this.resultURL = resultURL
+  nowIndex = {
+    version: 2,
+    routes: [
+      {
+        src: '/dar',
+        dest: '/dar.json'
+      }
+    ]
   }
+
+  constructor(public outDir: string, public resultURL: string) {}
 
   async save(assetPacks: AssetPack[]) {
-    return Promise.all([this.saveNowIndex(), this.saveIndex(assetPacks)])
+    await this.saveAssetPacks(assetPacks)
+    await this.saveNowIndex()
   }
 
-  async saveNowIndex() {
-    const nowIndex = `{
-  "version": 2,
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/index.json"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1.json"
-    }
-  ]
-}`
-    const nowIndexPath = path.join(this.outDir, 'now.json')
-    log.info('Writing server routes')
-    return fs.writeFile(nowIndexPath, nowIndex)
-  }
+  private async saveAssetPacks(assetPacks: AssetPack[]) {
+    log.info('Writing asset packs file')
 
-  async saveIndex(assetPacks: AssetPack[]) {
-    const packs: ManifestAssetPack[] = []
-    const indexPath = path.join(this.outDir, 'index.json')
+    const darPath = path.join(this.outDir, 'dar')
 
-    log.info('Writing index file')
+    try {
+      mkdirSync(darPath)
+    } catch {}
 
-    for (const assetPack of assetPacks) {
-      packs.push({
-        id: assetPack.id,
-        title: assetPack.title,
-        thumbnail: `${this.resultURL}/${assetPack.id}.png`,
-        url: `/${assetPack.id}.json`
+    const assetList: AssetList = { assets: [] }
+
+    await Promise.all(
+      assetPacks.map(async $ => {
+        const dar = $.toJSON()
+        this.darList.registries.push(dar)
+
+        this.nowIndex.routes.push({
+          src: `/dar/${dar.common_name}`,
+          dest: `/dar/${dar.common_name}.json`
+        })
+
+        this.nowIndex.routes.push({
+          src: `/dar/${dar.common_name}/address/(.+)`,
+          dest: `/dar/${dar.common_name}_assets.json`
+        })
+
+        await $.save(darPath)
+
+        $.assets.forEach($ => assetList.assets.push($.toJSON()))
       })
-    }
+    )
+  }
 
-    return writeFileAsServerRequest(indexPath, { packs })
+  private async saveNowIndex() {
+    log.info('Writing server routes')
+
+    const nowIndexPath = path.join(this.outDir, 'now.json')
+    const indexPath = path.join(this.outDir, 'dar.json')
+
+    await writeFileAsServerResponse(nowIndexPath, this.nowIndex)
+    await writeFileAsServerResponse(indexPath, this.darList)
   }
 }
