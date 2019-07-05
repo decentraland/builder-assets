@@ -1,0 +1,24 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "fp-future": "^1.0.1",
+    "morgan": "^1.9.1",
+    "nft-open-api": "^1.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.0"
+  },
+  "now": {
+    "alias": "builder-asset-schema.now.sh"
+  }
+}
