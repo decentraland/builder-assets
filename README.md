@@ -4,7 +4,7 @@ This repo contains the assets for the [Decentraland Builder](https://builder.dec
 
 ## Deploy
 
-### Before runing
+### Before running
 
 Some set-up before running the deployment script
 
