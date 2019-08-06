@@ -1,5 +1,5 @@
 {
-  "name": "Stone tile",
-  "tags": ["fantasy"],
+  "name": "Uneven Stone Tile",
+  "tags": ["fantasy","tile","stone","path"],
   "category": "tiles"
 }
