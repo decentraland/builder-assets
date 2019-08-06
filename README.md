@@ -6,7 +6,7 @@ This repo contains the assets for the [Decentraland Builder](https://builder.dec
 
 ### Before running
 
-Some set-up before running the deployment script
+Some setup before running the deployment script
 
 #### Env file
 
@@ -41,3 +41,4 @@ now alias $(now --scope decentraland) ALIAS
 ```
 
 Run `npm run bundle -- --help` to see the help in the terminal
+
