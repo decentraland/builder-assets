@@ -1,6 +1,6 @@
 {
   "name": "builder-assets",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Builder Asset Pack repository",
   "main": "bundle.js",
   "scripts": {
