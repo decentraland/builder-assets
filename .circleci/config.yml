@@ -49,12 +49,3 @@ workflows:
           filters:
             branches:
               only: master
-  build-branch:
-    jobs:
-      - build:
-          filters:
-            branches:
-              ignore:
-                - master
-                - staging
-                - release
