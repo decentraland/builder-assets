@@ -34,16 +34,16 @@ export function register(program) {
     .option('--out [assetPackOut]', 'Path to the asset pack descriptor output')
     .option('--url [url]', 'URL where the assets where be served')
     .option('--force', 'Skip Hash comparison', false)
-
     .action(main)
 }
 
 async function main(options: Options) {
-  const temporalDir = '_' + path.basename(options.src)
+  let temporalDir = ''
 
   try {
     checkOptions(options)
 
+    temporalDir = '_' + path.basename(options.src)
     await fs.copy(options.src, temporalDir)
 
     const directories = await getDirectories(temporalDir)
@@ -78,7 +78,9 @@ async function main(options: Options) {
   } catch (err) {
     log.error(err)
   } finally {
-    await fs.remove(temporalDir)
+    if (temporalDir) {
+      await fs.remove(temporalDir)
+    }
   }
 
   log.info('All done!')

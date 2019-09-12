@@ -41,4 +41,3 @@ now alias $(now --scope decentraland) ALIAS
 ```
 
 Run `npm run bundle -- --help` to see the help in the terminal
-
