@@ -65,7 +65,7 @@ function writeAsset(folder: string, asset: Asset) {
 function toAsset(record: CSVRecord): Asset {
   return {
     name: record.name,
-    tags: JSON.parse(`[${record.tags}]`),
+    tags: record.tags.split(','),
     category: record.category
   }
 }

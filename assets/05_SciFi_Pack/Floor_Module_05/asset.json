@@ -1,7 +1,10 @@
 {
   "name": "Vent Floor Panel",
   "tags": [
-    "stuff"
+    "scifi",
+    "tile",
+    "ground",
+    "vent"
   ],
   "category": "tiles"
 }

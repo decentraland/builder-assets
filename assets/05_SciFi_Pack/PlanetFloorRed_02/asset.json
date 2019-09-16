@@ -1,9 +1,8 @@
 {
-  "name": "Grid Floor Panel",
+  "name": "Planet Surface Crimson",
   "tags": [
     "scifi",
-    "tile",
-    "ground"
+    "tile"
   ],
   "category": "tiles"
 }
