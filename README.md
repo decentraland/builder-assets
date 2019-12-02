@@ -2,6 +2,12 @@
 
 This repo contains the assets for the [Decentraland Builder](https://builder.decentraland.org/) and a script to deploy them.
 
+## License
+
+![BY-NC 3.0](https://i.creativecommons.org/l/by-nc/3.0/88x31.png)
+
+This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/">Creative Commons Attribution-NonCommercial 3.0 Unported License</a>.
+
 ## Deploy
 
 ### Before running
