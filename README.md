@@ -6,7 +6,7 @@ This repo contains the assets for the [Decentraland Builder](https://builder.dec
 
 ![BY-NC 3.0](https://i.creativecommons.org/l/by-nc/3.0/88x31.png)
 
-This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/">Creative Commons Attribution-NonCommercial 3.0 Unported License</a>.
+This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/">Creative Commons Attribution-NonCommercial 3.0 Unported License</a>. Feel free to contact us at (hello@decentraland.org)[mailto:hello@decentraland.org] for other licensing agreements.
 
 ## Deploy
 
