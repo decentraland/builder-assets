@@ -26,7 +26,7 @@
   "dependencies": {
     "@types/csv-parse": "^1.2.2",
     "@types/fs-extra": "^5.1.0",
-    "aws-sdk": "^2.396.0",
+    "aws-sdk": "^2.814.0",
     "csv-parse": "^4.4.5",
     "decentraland-commons": "^5.1.0",
     "decentraland-server": "^2.0.1",
